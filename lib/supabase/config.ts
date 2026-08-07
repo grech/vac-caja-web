@@ -1,0 +1,24 @@
+type SupabasePublicConfig = {
+  url: string;
+  publishableKey: string;
+};
+
+export class SupabaseConfigurationError extends Error {
+  constructor() {
+    super("Falta la configuración pública de Supabase.");
+    this.name = "SupabaseConfigurationError";
+  }
+}
+
+export function getSupabasePublicConfig(): SupabasePublicConfig {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !publishableKey) {
+    throw new SupabaseConfigurationError();
+  }
+
+  return { url, publishableKey };
+}
