@@ -5,7 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 
 const OPERATION_TIMEOUT_MS = 12_000;
 
-type OperationalFunction = "update-points" | "redeem-reward";
+type OperationalFunction =
+  | "update-points"
+  | "redeem-reward"
+  | "get-recent-loyalty-events";
 
 export type EdgeTransportResult =
   | { ok: true; responseOk: boolean; status: number; payload: unknown }

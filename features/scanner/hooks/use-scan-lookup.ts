@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateActivityAfterConfirmedOperation } from "@/features/activity/services/activity-invalidation";
+import { useAuth } from "@/features/auth/providers/auth-provider";
 import { useSessionExpiration } from "@/features/auth/hooks/use-session-expiration";
 import { decideOperation } from "@/features/operations/domain/operation-decision";
 import { parsePurchaseAmount } from "@/features/operations/domain/purchase-amount";
@@ -22,6 +25,8 @@ import { initialScannerState, scannerReducer } from "../domain/scanner-state";
 import { lookupScannedAccount } from "../services/scan-service";
 
 export function useScanLookup(businessId: string) {
+  const queryClient = useQueryClient();
+  const { userId } = useAuth();
   const [state, dispatch] = useReducer(scannerReducer, initialScannerState);
   const lockedRef = useRef(false);
   const versionRef = useRef(0);
@@ -66,6 +71,14 @@ export function useScanLookup(businessId: string) {
         return;
       }
 
+      if (userId) {
+        await invalidateActivityAfterConfirmedOperation(
+          queryClient,
+          { userId, businessId },
+          result,
+        );
+      }
+
       dispatch({
         type: "resolve-operation",
         version,
@@ -83,7 +96,7 @@ export function useScanLookup(businessId: string) {
         requestRef.current = null;
       }
     }
-  }, [businessId, expireSession]);
+  }, [businessId, expireSession, queryClient, userId]);
 
   const performRedeem = useCallback(async (
     version: number,
@@ -115,6 +128,14 @@ export function useScanLookup(businessId: string) {
         return;
       }
 
+      if (userId) {
+        await invalidateActivityAfterConfirmedOperation(
+          queryClient,
+          { userId, businessId },
+          result,
+        );
+      }
+
       dispatch({
         type: "resolve-operation",
         version,
@@ -132,7 +153,7 @@ export function useScanLookup(businessId: string) {
         requestRef.current = null;
       }
     }
-  }, [businessId, expireSession]);
+  }, [businessId, expireSession, queryClient, userId]);
 
   const acceptDecodedQr = useCallback(async (rawValue: string) => {
     if (lockedRef.current) {

@@ -47,6 +47,12 @@ export function OperationalShell() {
           >
             Escanear cliente
           </Link>
+          <Link
+            href="/caja/activity"
+            className="mt-3 inline-flex min-h-12 w-full items-center justify-center rounded-brand border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-soft focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-vac-orange"
+          >
+            Ver actividad reciente
+          </Link>
           <div className="mt-5 border-t border-border-subtle pt-5">
             <LogoutButton />
           </div>
