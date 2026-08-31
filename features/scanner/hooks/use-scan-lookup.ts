@@ -1,12 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateActivityAfterConfirmedOperation } from "@/features/activity/services/activity-invalidation";
 import { useAuth } from "@/features/auth/providers/auth-provider";
 import { useSessionExpiration } from "@/features/auth/hooks/use-session-expiration";
 import { decideOperation } from "@/features/operations/domain/operation-decision";
 import { parsePurchaseAmount } from "@/features/operations/domain/purchase-amount";
+import {
+  createPendingEarnOperation,
+  createPendingRedeemOperation,
+  isAmbiguousOperationError,
+  selectPendingOperationForRetry,
+  type PendingEarnOperation,
+  type PendingOperation,
+  type PendingRedeemOperation,
+} from "@/features/operations/domain/pending-operation";
 import {
   claimOperationSubmission,
   clearOperationSubmission,
@@ -15,13 +24,16 @@ import {
   earnAccount,
   redeemAccountReward,
 } from "@/features/operations/services/operation-service";
-import type { CajaScanResult } from "../domain/scan-result";
 import { normalizeQrValue } from "../domain/qr-value";
 import {
   activateScanRequestLifecycle,
   isCurrentScanRequest,
 } from "../domain/scan-request-lifecycle";
-import { initialScannerState, scannerReducer } from "../domain/scanner-state";
+import {
+  initialScannerState,
+  scannerReducer,
+  type ScannerState,
+} from "../domain/scanner-state";
 import { lookupScannedAccount } from "../services/scan-service";
 
 export function useScanLookup(businessId: string) {
@@ -33,6 +45,12 @@ export function useScanLookup(businessId: string) {
   const requestRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
   const operationLockRef = useRef<number | null>(null);
+  const pendingOperationRef = useRef<PendingOperation | null>(null);
+  const retryInFlightRef = useRef(false);
+  const [retryPresentation, setRetryPresentation] = useState<Extract<
+    ScannerState,
+    { status: "submitting" } | { status: "operation-success" } | { status: "operation-error" }
+  > | null>(null);
   const expireSession = useSessionExpiration();
 
   useEffect(() => activateScanRequestLifecycle({
@@ -42,10 +60,10 @@ export function useScanLookup(businessId: string) {
   }), []);
 
   const performEarn = useCallback(async (
-    version: number,
-    scan: CajaScanResult,
-    purchaseAmount?: number,
+    pending: PendingEarnOperation,
+    isRetry = false,
   ) => {
+    const { version, scan, operationId, purchaseAmount } = pending;
     const controller = new AbortController();
     requestRef.current = controller;
 
@@ -53,6 +71,7 @@ export function useScanLookup(businessId: string) {
       const result = await earnAccount({
         businessId,
         accountId: scan.accountId,
+        operationId,
         ...(purchaseAmount === undefined ? {} : { purchaseAmount }),
         signal: controller.signal,
       });
@@ -63,12 +82,32 @@ export function useScanLookup(businessId: string) {
 
       if (!result.ok) {
         if (result.code === "SESSION_EXPIRED") {
+          if (pendingOperationRef.current?.operationId === operationId) {
+            pendingOperationRef.current = null;
+          }
           await expireSession();
           return;
         }
 
-        dispatch({ type: "reject-operation", version, error: result.code });
+        if (!isAmbiguousOperationError(result.code)
+          && pendingOperationRef.current?.operationId === operationId) {
+          pendingOperationRef.current = null;
+        }
+        if (isRetry) {
+          setRetryPresentation({
+            status: "operation-error",
+            version,
+            operation: "earn",
+            error: result.code,
+          });
+        } else {
+          dispatch({ type: "reject-operation", version, error: result.code });
+        }
         return;
+      }
+
+      if (pendingOperationRef.current?.operationId === operationId) {
+        pendingOperationRef.current = null;
       }
 
       if (userId) {
@@ -79,17 +118,32 @@ export function useScanLookup(businessId: string) {
         );
       }
 
-      dispatch({
-        type: "resolve-operation",
-        version,
-        outcome: { operation: "earn", result: result.data },
-      });
+      const outcome = { operation: "earn" as const, result: result.data };
+      if (isRetry) {
+        setRetryPresentation({
+          status: "operation-success",
+          version,
+          customerDisplayName: scan.customer.displayName,
+          outcome,
+        });
+      } else {
+        dispatch({ type: "resolve-operation", version, outcome });
+      }
     } catch (error) {
       if (
         !(error instanceof DOMException && error.name === "AbortError")
         && isCurrentScanRequest({ mounted: mountedRef, version: versionRef }, version)
       ) {
-        dispatch({ type: "reject-operation", version, error: "UNEXPECTED" });
+        if (isRetry) {
+          setRetryPresentation({
+            status: "operation-error",
+            version,
+            operation: "earn",
+            error: "UNEXPECTED",
+          });
+        } else {
+          dispatch({ type: "reject-operation", version, error: "UNEXPECTED" });
+        }
       }
     } finally {
       if (requestRef.current === controller) {
@@ -99,10 +153,10 @@ export function useScanLookup(businessId: string) {
   }, [businessId, expireSession, queryClient, userId]);
 
   const performRedeem = useCallback(async (
-    version: number,
-    scan: CajaScanResult,
-    rewardId: string,
+    pending: PendingRedeemOperation,
+    isRetry = false,
   ) => {
+    const { version, scan, rewardId, operationId } = pending;
     const controller = new AbortController();
     requestRef.current = controller;
 
@@ -111,6 +165,7 @@ export function useScanLookup(businessId: string) {
         businessId,
         accountId: scan.accountId,
         rewardId,
+        operationId,
         signal: controller.signal,
       });
 
@@ -120,12 +175,32 @@ export function useScanLookup(businessId: string) {
 
       if (!result.ok) {
         if (result.code === "SESSION_EXPIRED") {
+          if (pendingOperationRef.current?.operationId === operationId) {
+            pendingOperationRef.current = null;
+          }
           await expireSession();
           return;
         }
 
-        dispatch({ type: "reject-operation", version, error: result.code });
+        if (!isAmbiguousOperationError(result.code)
+          && pendingOperationRef.current?.operationId === operationId) {
+          pendingOperationRef.current = null;
+        }
+        if (isRetry) {
+          setRetryPresentation({
+            status: "operation-error",
+            version,
+            operation: "redeem",
+            error: result.code,
+          });
+        } else {
+          dispatch({ type: "reject-operation", version, error: result.code });
+        }
         return;
+      }
+
+      if (pendingOperationRef.current?.operationId === operationId) {
+        pendingOperationRef.current = null;
       }
 
       if (userId) {
@@ -136,17 +211,32 @@ export function useScanLookup(businessId: string) {
         );
       }
 
-      dispatch({
-        type: "resolve-operation",
-        version,
-        outcome: { operation: "redeem", result: result.data },
-      });
+      const outcome = { operation: "redeem" as const, result: result.data };
+      if (isRetry) {
+        setRetryPresentation({
+          status: "operation-success",
+          version,
+          customerDisplayName: scan.customer.displayName,
+          outcome,
+        });
+      } else {
+        dispatch({ type: "resolve-operation", version, outcome });
+      }
     } catch (error) {
       if (
         !(error instanceof DOMException && error.name === "AbortError")
         && isCurrentScanRequest({ mounted: mountedRef, version: versionRef }, version)
       ) {
-        dispatch({ type: "reject-operation", version, error: "UNEXPECTED" });
+        if (isRetry) {
+          setRetryPresentation({
+            status: "operation-error",
+            version,
+            operation: "redeem",
+            error: "UNEXPECTED",
+          });
+        } else {
+          dispatch({ type: "reject-operation", version, error: "UNEXPECTED" });
+        }
       }
     } finally {
       if (requestRef.current === controller) {
@@ -195,8 +285,10 @@ export function useScanLookup(businessId: string) {
           return;
         }
 
+        const pending = createPendingEarnOperation({ version, scan: result.data });
+        pendingOperationRef.current = pending;
         dispatch({ type: "begin-auto-earn", version, result: result.data });
-        await performEarn(version, result.data);
+        await performEarn(pending);
         return;
       }
 
@@ -239,8 +331,14 @@ export function useScanLookup(businessId: string) {
     }
 
     const { version, result } = state;
+    const pending = createPendingEarnOperation({
+      version,
+      scan: result,
+      ...(purchaseAmount == null ? {} : { purchaseAmount }),
+    });
+    pendingOperationRef.current = pending;
     dispatch({ type: "begin-operation", operation: "earn" });
-    await performEarn(version, result, purchaseAmount ?? undefined);
+    await performEarn(pending);
   }, [performEarn, state]);
 
   const submitRedeem = useCallback(async () => {
@@ -259,21 +357,63 @@ export function useScanLookup(businessId: string) {
     }
 
     const { version, result, selectedRewardId } = state;
+    const pending = createPendingRedeemOperation({
+      version,
+      scan: result,
+      rewardId: selectedRewardId,
+    });
+    pendingOperationRef.current = pending;
     dispatch({ type: "begin-operation", operation: "redeem" });
-    await performRedeem(version, result, selectedRewardId);
+    await performRedeem(pending);
   }, [performRedeem, state]);
 
+  const retryPendingOperation = useCallback(async (pending: PendingOperation) => {
+    if (retryInFlightRef.current
+      || pendingOperationRef.current?.operationId !== pending.operationId) {
+      return;
+    }
+
+    retryInFlightRef.current = true;
+    setRetryPresentation({
+      status: "submitting",
+      version: pending.version,
+      result: pending.scan,
+      operation: pending.operation,
+    });
+
+    try {
+      if (pending.operation === "earn") {
+        await performEarn(pending, true);
+      } else {
+        await performRedeem(pending, true);
+      }
+    } finally {
+      retryInFlightRef.current = false;
+    }
+  }, [performEarn, performRedeem]);
+
   const reset = useCallback(() => {
+    const pending = state.status === "operation-error"
+      ? selectPendingOperationForRetry(pendingOperationRef.current, state)
+      : null;
+    if (pending) {
+      void retryPendingOperation(pending);
+      return;
+    }
+
     requestRef.current?.abort();
     requestRef.current = null;
     const version = ++versionRef.current;
     lockedRef.current = false;
     clearOperationSubmission(operationLockRef);
+    pendingOperationRef.current = null;
+    retryInFlightRef.current = false;
+    setRetryPresentation(null);
     dispatch({ type: "reset", version });
-  }, []);
+  }, [retryPendingOperation, state]);
 
   return {
-    state,
+    state: retryPresentation ?? state,
     acceptDecodedQr,
     reset,
     setPurchaseAmount,

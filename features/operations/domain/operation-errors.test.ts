@@ -14,6 +14,8 @@ describe("normalizeOperationBackendError", () => {
     ["INVALID_REWARD_CONFIGURATION", "INVALID_REWARD_CONFIGURATION"],
     ["INSUFFICIENT_POINTS", "INSUFFICIENT_POINTS"],
     ["INSUFFICIENT_STAMPS", "INSUFFICIENT_STAMPS"],
+    ["LOYALTY_OPERATION_ID_CONFLICT", "LOYALTY_OPERATION_ID_CONFLICT"],
+    ["INVALID_OPERATION_ID", "VALIDATION"],
   ] as const)("maps %s to %s", (backend, expected) => {
     expect(normalizeOperationBackendError(backend)).toBe(expected);
   });

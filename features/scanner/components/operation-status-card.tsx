@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { OPERATION_ERROR_COPY, type OperationErrorCode } from "@/features/operations/domain/operation-errors";
+import { isAmbiguousOperationError } from "@/features/operations/domain/pending-operation";
 import type { OperationOutcome } from "../domain/scanner-state";
 import type { CajaScanResult } from "../domain/scan-result";
 
@@ -77,7 +78,7 @@ export function OperationErrorCard({
   onReset: () => void;
 }) {
   const copy = OPERATION_ERROR_COPY[error];
-  const isAmbiguous = error === "TIMEOUT" || error === "NETWORK";
+  const isAmbiguous = isAmbiguousOperationError(error);
 
   return (
     <SurfaceCard className="max-w-2xl" aria-labelledby="operation-error-title" role="alert">
@@ -91,11 +92,13 @@ export function OperationErrorCard({
       {isAmbiguous ? (
         <p className="mt-4 rounded-brand border border-warning/30 bg-surface-warm p-4 text-sm font-semibold leading-6 text-warning">
           {operation === "redeem"
-            ? "No intentes canjear nuevamente todavía."
-            : "No vuelvas a registrar la compra automáticamente."}
+            ? "El reintento conserva este mismo canje pendiente. No selecciones otra recompensa."
+            : "El reintento conserva este mismo registro pendiente. No cambies los datos de la compra."}
         </p>
       ) : null}
-      <Button className="mt-7" onClick={onReset}>Volver a escanear</Button>
+      <Button className="mt-7" onClick={onReset}>
+        {isAmbiguous ? "Reintentar operación" : "Volver a escanear"}
+      </Button>
     </SurfaceCard>
   );
 }

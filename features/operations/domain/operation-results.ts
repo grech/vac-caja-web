@@ -6,6 +6,7 @@ export type CajaEarnResult = {
   stampsBalance: number;
   pointsDelta: number | null;
   stampsDelta: number | null;
+  operationOutcome?: "applied" | "replayed" | null;
 };
 
 export type CajaRedeemResult = {
@@ -15,6 +16,7 @@ export type CajaRedeemResult = {
   pointsSpent: number;
   stampsSpent: number;
   rewardName: string;
+  operationOutcome?: "applied" | "replayed" | null;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -41,6 +43,10 @@ function string(value: unknown): string | null {
 function programType(value: unknown): ProgramType | null {
   const type = string(value);
   return type === "points" || type === "stamps" ? type : null;
+}
+
+function operationOutcome(value: unknown): "applied" | "replayed" | null {
+  return value === "applied" || value === "replayed" ? value : null;
 }
 
 function balances(payload: UnknownRecord, type: ProgramType) {
@@ -75,6 +81,7 @@ export function mapEarnResult(value: unknown): CajaEarnResult | null {
     stampsDelta: number(
       payload.stamps_delta ?? payload.stampsDelta ?? payload.stamps_added ?? payload.stamps_earned,
     ),
+    operationOutcome: operationOutcome(payload.operationOutcome),
   };
 }
 
@@ -98,5 +105,6 @@ export function mapRedeemResult(value: unknown): CajaRedeemResult | null {
       payload.stamps_spent ?? payload.stampsSpent ?? payload.stamps_cost,
     ) ?? 0,
     rewardName,
+    operationOutcome: operationOutcome(payload.operationOutcome),
   };
 }

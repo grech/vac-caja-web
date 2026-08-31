@@ -14,6 +14,7 @@ describe("operation result mapping", () => {
       stampsBalance: 0,
       pointsDelta: 25,
       stampsDelta: null,
+      operationOutcome: null,
     });
   });
 
@@ -29,6 +30,7 @@ describe("operation result mapping", () => {
       stampsBalance: 5,
       pointsDelta: null,
       stampsDelta: 1,
+      operationOutcome: null,
     });
   });
 
@@ -48,7 +50,35 @@ describe("operation result mapping", () => {
       pointsSpent: 0,
       stampsSpent: 4,
       rewardName: "Bebida",
+      operationOutcome: null,
     });
     expect(JSON.stringify(result)).not.toContain("hidden-");
+  });
+
+  it.each(["applied", "replayed"] as const)(
+    "maps nested operationOutcome=%s as a normal earn success",
+    (operationOutcome) => {
+      expect(mapEarnResult({
+        success: true,
+        data: {
+          program_type: "points",
+          new_balance: 25,
+          points_earned: 5,
+          operationOutcome,
+        },
+      })).toMatchObject({ operationOutcome });
+    },
+  );
+
+  it("maps nested replayed redeem outcome", () => {
+    expect(mapRedeemResult({
+      success: true,
+      data: {
+        program_type: "stamps",
+        new_balance: 2,
+        reward_name: "Café",
+        operationOutcome: "replayed",
+      },
+    })).toMatchObject({ operationOutcome: "replayed" });
   });
 });

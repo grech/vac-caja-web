@@ -28,6 +28,7 @@ const SAFE_ERROR_CODES = new Set<OperationErrorCode>([
   "INVALID_REWARD_CONFIGURATION",
   "INSUFFICIENT_POINTS",
   "INSUFFICIENT_STAMPS",
+  "LOYALTY_OPERATION_ID_CONFLICT",
 ]);
 
 export type OperationServiceResult<T> =
@@ -105,6 +106,7 @@ async function postOperation<T>({
 export function earnAccount(input: {
   businessId: string;
   accountId: string;
+  operationId: string;
   purchaseAmount?: number;
   signal: AbortSignal;
 }) {
@@ -113,6 +115,7 @@ export function earnAccount(input: {
     body: {
       businessId: input.businessId,
       accountId: input.accountId,
+      operationId: input.operationId,
       ...(input.purchaseAmount === undefined ? {} : { purchaseAmount: input.purchaseAmount }),
     },
     signal: input.signal,
@@ -124,6 +127,7 @@ export function redeemAccountReward(input: {
   businessId: string;
   accountId: string;
   rewardId: string;
+  operationId: string;
   signal: AbortSignal;
 }) {
   return postOperation<CajaRedeemResult>({
@@ -132,6 +136,7 @@ export function redeemAccountReward(input: {
       businessId: input.businessId,
       accountId: input.accountId,
       rewardId: input.rewardId,
+      operationId: input.operationId,
     },
     signal: input.signal,
     mapResult: mapRedeemResult,

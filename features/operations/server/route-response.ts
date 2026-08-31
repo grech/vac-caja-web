@@ -22,6 +22,7 @@ const ERROR_STATUS: Record<OperationErrorCode, number> = {
   INVALID_REWARD_CONFIGURATION: 409,
   INSUFFICIENT_POINTS: 409,
   INSUFFICIENT_STAMPS: 409,
+  LOYALTY_OPERATION_ID_CONFLICT: 409,
 };
 
 export function operationResponse<T>(result: OperationGatewayResult<T>) {

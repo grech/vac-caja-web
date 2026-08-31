@@ -15,7 +15,8 @@ export type OperationErrorCode =
   | "REWARD_INACTIVE"
   | "INVALID_REWARD_CONFIGURATION"
   | "INSUFFICIENT_POINTS"
-  | "INSUFFICIENT_STAMPS";
+  | "INSUFFICIENT_STAMPS"
+  | "LOYALTY_OPERATION_ID_CONFLICT";
 
 const BACKEND_ERRORS: Record<string, OperationErrorCode> = {
   UNAUTHORIZED: "SESSION_EXPIRED",
@@ -35,6 +36,8 @@ const BACKEND_ERRORS: Record<string, OperationErrorCode> = {
   INVALID_REWARD_CONFIGURATION: "INVALID_REWARD_CONFIGURATION",
   INSUFFICIENT_POINTS: "INSUFFICIENT_POINTS",
   INSUFFICIENT_STAMPS: "INSUFFICIENT_STAMPS",
+  LOYALTY_OPERATION_ID_CONFLICT: "LOYALTY_OPERATION_ID_CONFLICT",
+  INVALID_OPERATION_ID: "VALIDATION",
 };
 
 export function normalizeOperationBackendError(code: unknown): OperationErrorCode {
@@ -62,9 +65,9 @@ export const OPERATION_ERROR_COPY: Record<
   PROGRAM_NOT_FOUND: { title: "Programa no disponible", description: "El programa de lealtad no está disponible en este momento." },
   INVALID_CONFIGURATION: { title: "Programa no disponible", description: "La configuración del programa no permite completar esta operación." },
   VALIDATION: { title: "Operación no válida", description: "Vuelve a escanear la cuenta e intenta con datos válidos." },
-  NETWORK: { title: "No pudimos conectar", description: "No sabemos si la operación llegó al servidor. Vuelve a escanear para revisar el saldo." },
-  TIMEOUT: { title: "No pudimos confirmar la operación", description: "No repitas la operación automáticamente. Vuelve a escanear la cuenta para revisar su saldo." },
-  UNEXPECTED: { title: "No pudimos completar la operación", description: "Vuelve a escanear la cuenta antes de intentar otra acción." },
+  NETWORK: { title: "No pudimos conectar", description: "No sabemos si la operación llegó al servidor. Puedes reintentar esta misma operación para confirmar el resultado." },
+  TIMEOUT: { title: "No pudimos confirmar la operación", description: "Puedes reintentar esta misma operación para confirmar el resultado." },
+  UNEXPECTED: { title: "No pudimos confirmar la operación", description: "Puedes reintentar esta misma operación para confirmar el resultado." },
   POINTS_PURCHASE_AMOUNT_REQUIRED: { title: "Monto requerido", description: "Ingresa un monto de compra válido antes de registrar puntos." },
   DUPLICATE_SCAN: { title: "Compra registrada recientemente", description: "La protección contra duplicados detuvo otro registro para esta cuenta. Vuelve a escanear para revisar el saldo." },
   REWARD_NOT_FOUND: { title: "Recompensa no disponible", description: "La recompensa seleccionada ya no está disponible." },
@@ -72,4 +75,5 @@ export const OPERATION_ERROR_COPY: Record<
   INVALID_REWARD_CONFIGURATION: { title: "Recompensa no disponible", description: "La configuración actual no permite este canje." },
   INSUFFICIENT_POINTS: { title: "Puntos insuficientes", description: "La cuenta no tiene puntos suficientes para este canje." },
   INSUFFICIENT_STAMPS: { title: "Sellos insuficientes", description: "La cuenta no tiene sellos suficientes para este canje." },
+  LOYALTY_OPERATION_ID_CONFLICT: { title: "Operación detenida", description: "No pudimos validar esta operación. Inicia una nueva acción antes de intentarlo otra vez." },
 };

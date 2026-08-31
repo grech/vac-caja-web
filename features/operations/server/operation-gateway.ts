@@ -69,6 +69,7 @@ export async function redeemLoyaltyReward(input: {
   businessId: string;
   accountId: string;
   rewardId: string;
+  operationId: string;
 }): Promise<OperationGatewayResult<CajaRedeemResult>> {
   const invocation = await invokeAuthenticatedOperation(
     "redeem-reward",

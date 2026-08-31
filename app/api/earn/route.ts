@@ -1,10 +1,11 @@
-import { normalizeQrValue } from "@/features/scanner/domain/qr-value";
-import { earnLoyalty } from "@/features/operations/server/operation-gateway";
+import { normalizeQrValue } from "../../../features/scanner/domain/qr-value";
+import { isValidOperationId } from "../../../features/operations/domain/operation-id";
+import { earnLoyalty } from "../../../features/operations/server/operation-gateway";
 import {
   invalidOperationRequest,
   operationResponse,
   unexpectedOperationResponse,
-} from "@/features/operations/server/route-response";
+} from "../../../features/operations/server/route-response";
 
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
     return invalidOperationRequest();
   }
 
-  const { businessId, accountId, purchaseAmount } = body as Record<string, unknown>;
+  const { businessId, accountId, operationId, purchaseAmount } = body as Record<string, unknown>;
   const business = typeof businessId === "string" ? normalizeQrValue(businessId) : null;
   const account = typeof accountId === "string" ? normalizeQrValue(accountId) : null;
   const hasPurchaseAmount = purchaseAmount !== undefined;
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
   if (
     !business ||
     !account ||
+    !isValidOperationId(operationId) ||
     (hasPurchaseAmount && (
       typeof purchaseAmount !== "number" ||
       !Number.isFinite(purchaseAmount) ||
@@ -34,6 +36,7 @@ export async function POST(request: Request) {
     return operationResponse(await earnLoyalty({
       businessId: business,
       accountId: account,
+      operationId,
       ...(hasPurchaseAmount ? { purchaseAmount: purchaseAmount as number } : {}),
     }));
   } catch {
