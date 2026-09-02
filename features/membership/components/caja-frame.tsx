@@ -31,7 +31,7 @@ export function CajaFrame({
           {children}
         </section>
 
-        <footer className="border-t border-border-subtle py-5 font-mono text-xs text-muted">
+        <footer className="border-t border-border-subtle py-5 text-xs text-muted">
           Uso de contingencia · VAC
         </footer>
       </div>

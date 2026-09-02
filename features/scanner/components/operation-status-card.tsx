@@ -15,8 +15,8 @@ export function OperationProgressCard({
 }) {
   return (
     <SurfaceCard className="max-w-2xl" aria-labelledby="operation-progress-title" aria-live="polite">
-      <p className="font-mono text-xs font-semibold uppercase tracking-system text-warning">Operación en curso</p>
-      <h2 id="operation-progress-title" className="mt-3 text-3xl font-bold tracking-tight text-ink">
+      <p className="text-xs font-semibold uppercase tracking-system text-muted-strong">Operación en curso</p>
+      <h2 id="operation-progress-title" className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
         {operation === "earn" ? "Registrando saldo…" : "Canjeando recompensa…"}
       </h2>
       <p className="mt-4 text-base leading-7 text-muted-strong">
@@ -46,8 +46,8 @@ export function OperationSuccessCard({
     <SurfaceCard className="max-w-2xl" aria-labelledby="operation-success-title" aria-live="polite">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-system text-success">Operación completada</p>
-          <h2 id="operation-success-title" className="mt-3 text-3xl font-bold tracking-tight text-ink">
+          <p className="text-xs font-semibold uppercase tracking-system text-success">Operación completada</p>
+          <h2 id="operation-success-title" className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
             {outcome.operation === "earn" ? "Saldo actualizado" : "Recompensa canjeada"}
           </h2>
         </div>
@@ -61,9 +61,9 @@ export function OperationSuccessCard({
           +{delta} {isPoints ? "puntos" : delta === 1 ? "sello" : "sellos"}
         </p>
       ) : null}
-      <p className="mt-6 font-mono text-xs font-semibold uppercase tracking-system text-muted">Saldo actual</p>
-      <p className="mt-2 text-6xl font-bold tracking-display text-ink">{balance}</p>
-      <Button className="mt-8 w-full sm:w-auto" onClick={onReset}>Escanear otro</Button>
+      <p className="mt-6 text-xs font-semibold uppercase tracking-system text-muted">Saldo actual</p>
+      <p className="mt-2 text-5xl font-bold tracking-display text-ink">{balance}</p>
+      <Button variant="secondary" className="mt-8 w-full sm:w-auto" onClick={onReset}>Escanear otro</Button>
     </SurfaceCard>
   );
 }
@@ -82,10 +82,12 @@ export function OperationErrorCard({
 
   return (
     <SurfaceCard className="max-w-2xl" aria-labelledby="operation-error-title" role="alert">
-      <p className="font-mono text-xs font-semibold uppercase tracking-system text-danger">
+      <p
+        className={`text-xs font-semibold uppercase tracking-system ${isAmbiguous ? "text-warning" : "text-danger"}`}
+      >
         {isAmbiguous ? "Resultado por confirmar" : "Operación detenida"}
       </p>
-      <h2 id="operation-error-title" className="mt-3 text-3xl font-bold tracking-tight text-ink">
+      <h2 id="operation-error-title" className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
         {copy.title}
       </h2>
       <p className="mt-4 text-base leading-7 text-muted-strong">{copy.description}</p>
@@ -96,7 +98,7 @@ export function OperationErrorCard({
             : "El reintento conserva este mismo registro pendiente. No cambies los datos de la compra."}
         </p>
       ) : null}
-      <Button className="mt-7" onClick={onReset}>
+      <Button variant="primary" className="mt-7" onClick={onReset}>
         {isAmbiguous ? "Reintentar operación" : "Volver a escanear"}
       </Button>
     </SurfaceCard>

@@ -32,17 +32,17 @@ export function ScanResultCard({
       <SurfaceCard aria-labelledby="customer-title">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-success">Cuenta encontrada</p>
-            <h1 id="customer-title" className="mt-3 text-3xl font-bold tracking-tight text-ink">
+            <p className="text-xs font-semibold uppercase tracking-system text-success">Cuenta encontrada</p>
+            <h1 id="customer-title" className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
               {result.customer.displayName}
             </h1>
           </div>
           <Badge>{isPoints ? "Puntos" : "Sellos"}</Badge>
         </div>
-        <p className="mt-8 font-mono text-xs font-semibold uppercase tracking-system text-muted">
+        <p className="mt-8 text-xs font-semibold uppercase tracking-system text-muted">
           {isPoints ? "Puntos" : "Sellos"}
         </p>
-        <p className="mt-2 text-6xl font-bold tracking-display text-ink">{balance}</p>
+        <p className="mt-2 text-5xl font-bold tracking-display text-ink">{balance}</p>
         {isPoints ? (
           <div className="mt-8">
             <label htmlFor="purchase-amount" className="text-sm font-semibold text-ink">
@@ -68,10 +68,10 @@ export function ScanResultCard({
                 Ingresa un monto mayor a cero.
               </p>
             ) : null}
-            <Button className="mt-4 w-full" onClick={onEarn}>Registrar compra</Button>
+            <Button variant="primary" className="mt-4 w-full" onClick={onEarn}>Registrar compra</Button>
           </div>
         ) : (
-          <Button className="mt-8 w-full" onClick={onEarn}>Agregar sellos</Button>
+          <Button variant="primary" className="mt-8 w-full" onClick={onEarn}>Agregar sellos</Button>
         )}
         <button
           type="button"
@@ -111,7 +111,7 @@ export function ScanResultCard({
                         <span className="flex items-start justify-between gap-4">
                           <span className="font-semibold text-ink">{reward.name}</span>
                           {requirement !== null ? (
-                            <span className="shrink-0 font-mono text-xs font-semibold text-warning">
+                            <span className="shrink-0 text-xs font-semibold text-muted-strong">
                               {requirement} {result.programType === "points" ? "pts" : "sellos"}
                             </span>
                           ) : null}
@@ -125,7 +125,7 @@ export function ScanResultCard({
                 );
               })}
             </div>
-            <Button className="mt-5 w-full" onClick={onRedeem} disabled={!selectedRewardId}>
+            <Button variant="primary" className="mt-5 w-full" onClick={onRedeem} disabled={!selectedRewardId}>
               Canjear recompensa
             </Button>
           </fieldset>

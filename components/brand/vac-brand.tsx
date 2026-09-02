@@ -1,18 +1,24 @@
+import Image from "next/image";
+
 type VacBrandProps = {
   compact?: boolean;
 };
 
+// Canonical VAC lockup (icon + wordmark). Asset lives in this repository at
+// public/images/vac-logo-horizontal.webp — do not recreate, recolor or crop it.
+const ASPECT_RATIO = 2172 / 724;
+
 export function VacBrand({ compact = false }: VacBrandProps) {
+  const height = compact ? 24 : 28;
+
   return (
-    <div className="flex items-center gap-3" aria-label="VAC Caja">
-      <span className="grid size-11 place-items-center rounded-brand bg-vac-yellow text-sm font-extrabold tracking-tight text-ink shadow-brand">
-        VAC
-      </span>
-      <span
-        className={`${compact ? "hidden sm:inline" : "inline"} font-mono text-xs font-semibold uppercase tracking-system text-muted-strong`}
-      >
-        Terminal web
-      </span>
-    </div>
+    <Image
+      src="/images/vac-logo-horizontal.webp"
+      alt="VAC"
+      width={Math.round(height * ASPECT_RATIO)}
+      height={height}
+      priority
+      className="w-auto"
+    />
   );
 }

@@ -84,6 +84,7 @@ export function LoginForm() {
       ) : null}
 
       <Button
+        variant="primary"
         className="mt-7 w-full"
         type="submit"
         disabled={isSubmitting || !identifier || !password || !isConfigured}

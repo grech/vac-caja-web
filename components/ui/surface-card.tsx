@@ -8,7 +8,7 @@ export function SurfaceCard({
 }: SurfaceCardProps) {
   return (
     <article
-      className={`rounded-surface border border-border-subtle bg-surface p-6 shadow-surface sm:p-8 ${className}`}
+      className={`rounded-surface border border-border bg-surface p-6 shadow-surface sm:p-8 ${className}`}
       {...props}
     />
   );

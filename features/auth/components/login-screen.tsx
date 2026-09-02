@@ -15,12 +15,11 @@ export function LoginScreen({ notice }: LoginScreenProps) {
         </header>
 
         <section className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,28rem)] lg:gap-20">
-          <div className="relative isolate max-w-2xl">
-            <div className="vac-sun" aria-hidden="true" />
-            <p className="mb-5 font-mono text-xs font-semibold uppercase tracking-system text-orange-strong">
+          <div className="max-w-2xl">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-system text-orange-strong">
               Acceso operativo
             </p>
-            <h1 className="text-balance text-5xl font-bold tracking-display text-ink sm:text-7xl">
+            <h1 className="text-balance text-4xl font-bold tracking-display text-ink sm:text-5xl">
               VAC Caja
             </h1>
             <p className="mt-6 max-w-lg text-pretty text-base leading-7 text-muted-strong sm:text-lg sm:leading-8">
@@ -29,7 +28,7 @@ export function LoginScreen({ notice }: LoginScreenProps) {
           </div>
 
           <SurfaceCard aria-labelledby="login-title">
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-muted">
+            <p className="text-xs font-semibold uppercase tracking-system text-muted">
               Terminal web
             </p>
             <h2 id="login-title" className="mt-3 text-2xl font-semibold tracking-tight text-ink">
@@ -54,7 +53,7 @@ export function LoginScreen({ notice }: LoginScreenProps) {
           </SurfaceCard>
         </section>
 
-        <footer className="border-t border-border-subtle py-5 font-mono text-xs text-muted">
+        <footer className="border-t border-border-subtle py-5 text-xs text-muted">
           Uso de contingencia · VAC
         </footer>
       </div>

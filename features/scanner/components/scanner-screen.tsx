@@ -35,10 +35,10 @@ export function ScannerScreen() {
       <div className="w-full">
         <div className="mb-7 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-warning">
+            <p className="text-xs font-semibold uppercase tracking-system text-muted-strong">
               {currentBusiness.businessName}
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-5xl">Escanear cliente</h1>
+            <h1 className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Escanear cliente</h1>
           </div>
           <Link
             href="/caja"
@@ -94,14 +94,14 @@ export function ScannerScreen() {
 
         {state.status === "error" ? (
           <SurfaceCard aria-labelledby="scan-error-title" role="alert" className="max-w-2xl">
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-danger">Consulta detenida</p>
-            <h2 id="scan-error-title" className="mt-3 text-3xl font-bold tracking-tight text-ink">
+            <p className="text-xs font-semibold uppercase tracking-system text-danger">Consulta detenida</p>
+            <h2 id="scan-error-title" className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
               {SCAN_ERROR_COPY[state.error].title}
             </h2>
             <p className="mt-4 text-base leading-7 text-muted-strong">
               {SCAN_ERROR_COPY[state.error].description}
             </p>
-            <Button className="mt-7" onClick={reset}>Escanear otro</Button>
+            <Button variant="primary" className="mt-7" onClick={reset}>Escanear otro</Button>
           </SurfaceCard>
         ) : null}
       </div>

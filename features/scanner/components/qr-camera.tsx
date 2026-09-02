@@ -43,7 +43,7 @@ export function QrCamera({
 
   return (
     <section aria-labelledby="camera-title">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-ink shadow-[0_24px_70px_rgba(32,33,36,0.18)]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-surface border border-border bg-ink">
         <video
           ref={videoRef}
           muted
@@ -51,7 +51,7 @@ export function QrCamera({
           aria-label="Vista en vivo de la cámara para leer el código QR del cliente"
           className="h-full w-full object-cover"
         />
-        <div className="pointer-events-none absolute inset-[12%] rounded-[1.25rem] border-2 border-vac-yellow shadow-[0_0_0_999px_rgba(32,33,36,0.28)]" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-[12%] rounded-brand border-2 border-vac-yellow shadow-[0_0_0_999px_rgba(32,33,36,0.28)]" aria-hidden="true" />
       </div>
 
       <div className="mt-5 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -60,7 +60,11 @@ export function QrCamera({
           <p className="mt-1 max-w-xl text-sm leading-6 text-muted-strong">{copy.description}</p>
         </div>
         {canRequest ? (
-          <Button onClick={() => void requestCamera()} disabled={!enabled}>
+          <Button
+            variant="primary"
+            onClick={() => void requestCamera()}
+            disabled={!enabled}
+          >
             {status === "requestable" ? "Activar cámara" : "Reintentar cámara"}
           </Button>
         ) : null}

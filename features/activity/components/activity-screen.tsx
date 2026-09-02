@@ -20,7 +20,7 @@ function ActivityRow({ event }: { event: CajaActivityEvent }) {
     <li className="grid gap-3 border-b border-border-subtle py-5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
       <div>
         <p className="text-lg font-semibold text-ink">{getActivityTitle(event)}</p>
-        {event.rewardName ? <p className="mt-1 font-medium text-warning">{event.rewardName}</p> : null}
+        {event.rewardName ? <p className="mt-1 font-medium text-ink">{event.rewardName}</p> : null}
         {adjustment ? <p className="mt-1 text-sm text-muted-strong">{adjustment}</p> : null}
         {event.customerName ? <p className="mt-2 text-sm text-muted-strong">{event.customerName}</p> : null}
       </div>
@@ -43,10 +43,10 @@ export function ActivityScreen() {
       <div className="w-full">
         <div className="mb-7 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-warning">
+            <p className="text-xs font-semibold uppercase tracking-system text-muted-strong">
               {currentBusiness.businessName}
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-5xl">
+            <h1 className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
               Actividad reciente
             </h1>
           </div>
@@ -60,17 +60,17 @@ export function ActivityScreen() {
 
         {viewState.status === "loading" ? (
           <SurfaceCard role="status" aria-live="polite" className="max-w-2xl">
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-warning">Consultando</p>
+            <p className="text-xs font-semibold uppercase tracking-system text-muted-strong">Consultando</p>
             <h2 className="mt-3 text-2xl font-semibold text-ink">Cargando actividad…</h2>
           </SurfaceCard>
         ) : null}
 
         {viewState.status === "error" ? (
           <SurfaceCard role="alert" aria-labelledby="activity-error-title" className="max-w-2xl">
-            <p className="font-mono text-xs font-semibold uppercase tracking-system text-danger">Consulta detenida</p>
+            <p className="text-xs font-semibold uppercase tracking-system text-danger">Consulta detenida</p>
             <h2 id="activity-error-title" className="mt-3 text-2xl font-semibold text-ink">No pudimos cargar la actividad</h2>
             <p className="mt-3 text-sm leading-6 text-muted-strong">Revisa tu conexión e intenta nuevamente.</p>
-            <Button className="mt-6" onClick={() => void refresh()}>Reintentar</Button>
+            <Button variant="primary" className="mt-6" onClick={() => void refresh()}>Reintentar</Button>
           </SurfaceCard>
         ) : null}
 
@@ -84,6 +84,7 @@ export function ActivityScreen() {
                 </p>
               </div>
               <Button
+                variant="secondary"
                 onClick={() => void refresh()}
                 disabled={!viewState.canRefresh}
                 aria-busy={viewState.isRefreshing}

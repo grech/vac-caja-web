@@ -36,7 +36,12 @@ export function LogoutButton() {
 
   return (
     <div>
-      <Button onClick={handleLogout} disabled={isSubmitting} aria-busy={isSubmitting}>
+      <Button
+        variant="ghost"
+        onClick={handleLogout}
+        disabled={isSubmitting}
+        aria-busy={isSubmitting}
+      >
         {isSubmitting ? "Cerrando sesión…" : "Cerrar sesión"}
       </Button>
       {error ? (
