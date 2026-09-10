@@ -19,6 +19,7 @@ import {
   signOutSession,
 } from "../services/auth-service";
 import { clearAuthenticatedCache } from "../services/authenticated-cache";
+import { signInWithGoogleRedirect } from "../services/google-oauth-service";
 import type { AuthActionResult } from "../types";
 
 type AuthContextValue = {
@@ -26,6 +27,7 @@ type AuthContextValue = {
   isReady: boolean;
   isConfigured: boolean;
   signIn: (identifier: string, password: string) => Promise<AuthActionResult>;
+  signInWithGoogle: () => Promise<AuthActionResult>;
   signOut: () => Promise<AuthActionResult>;
   endExpiredSession: () => Promise<void>;
 };
@@ -49,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const currentUserId = useRef<string | null>(null);
   const signInRequest = useRef<Promise<AuthActionResult> | null>(null);
+  const googleSignInRequest = useRef<Promise<AuthActionResult> | null>(null);
   const signOutRequest = useRef<Promise<AuthActionResult> | null>(null);
 
   const changeIdentity = useCallback(
@@ -122,6 +125,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [changeIdentity, supabase],
   );
 
+  const signInWithGoogle = useCallback(async () => {
+    if (!supabase) {
+      return { ok: false, code: "configuration" } as const;
+    }
+
+    if (googleSignInRequest.current) {
+      return googleSignInRequest.current;
+    }
+
+    const request = signInWithGoogleRedirect(supabase, window.location.origin);
+    googleSignInRequest.current = request;
+
+    try {
+      return await request;
+    } finally {
+      googleSignInRequest.current = null;
+    }
+  }, [supabase]);
+
   const signOut = useCallback(async () => {
     if (!supabase) {
       return { ok: false, code: "configuration" } as const;
@@ -159,10 +181,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...authState,
       isConfigured: Boolean(supabase),
       signIn,
+      signInWithGoogle,
       signOut,
       endExpiredSession,
     }),
-    [authState, endExpiredSession, signIn, signOut, supabase],
+    [authState, endExpiredSession, signIn, signInWithGoogle, signOut, supabase],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

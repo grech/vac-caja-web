@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { prepareLoginCredentials } from "../domain/login-identity";
 import type { AuthActionResult, AuthFailureCode } from "../types";
 
-function classifyAuthError(error: unknown): AuthFailureCode {
+export function classifyAuthError(error: unknown): AuthFailureCode {
   if (
     error instanceof TypeError ||
     (error &&

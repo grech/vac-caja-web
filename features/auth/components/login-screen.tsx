@@ -35,7 +35,8 @@ export function LoginScreen({ notice }: LoginScreenProps) {
               Iniciar sesión
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-strong">
-              Propietarios usan su correo. Cajeros usan su alias de Caja.
+              Propietarios pueden entrar con su correo, contraseña o Google.
+              Cajeros continúan usando su usuario de Caja.
             </p>
 
             {notice ? (
