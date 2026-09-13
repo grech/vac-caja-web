@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/surface-card";
 import { OPERATION_ERROR_COPY, type OperationErrorCode } from "@/features/operations/domain/operation-errors";
 import { isAmbiguousOperationError } from "@/features/operations/domain/pending-operation";
+import { getOperationSuccessPresentation } from "@/features/operations/domain/operation-success-presentation";
 import type { OperationOutcome } from "../domain/scanner-state";
 import type { CajaScanResult } from "../domain/scan-result";
 
@@ -36,11 +37,9 @@ export function OperationSuccessCard({
   onReset: () => void;
 }) {
   const result = outcome.result;
+  const presentation = getOperationSuccessPresentation(outcome);
   const isPoints = result.programType === "points";
   const balance = isPoints ? result.pointsBalance : result.stampsBalance;
-  const delta = outcome.operation === "earn"
-    ? (isPoints ? outcome.result.pointsDelta : outcome.result.stampsDelta)
-    : null;
 
   return (
     <SurfaceCard className="max-w-2xl" aria-labelledby="operation-success-title" aria-live="polite">
@@ -48,7 +47,7 @@ export function OperationSuccessCard({
         <div>
           <p className="text-xs font-semibold uppercase tracking-system text-success">Operación completada</p>
           <h2 id="operation-success-title" className="mt-3 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-            {outcome.operation === "earn" ? "Saldo actualizado" : "Recompensa canjeada"}
+            {presentation.title}
           </h2>
         </div>
         <Badge>{isPoints ? "Puntos" : "Sellos"}</Badge>
@@ -56,9 +55,14 @@ export function OperationSuccessCard({
       <p className="mt-4 text-base text-muted-strong">{customerDisplayName}</p>
       {outcome.operation === "redeem" ? (
         <p className="mt-6 text-2xl font-semibold text-ink">{outcome.result.rewardName}</p>
-      ) : delta !== null ? (
+      ) : presentation.earnedDelta !== null ? (
         <p className="mt-6 text-4xl font-bold tracking-display text-success">
-          +{delta} {isPoints ? "puntos" : delta === 1 ? "sello" : "sellos"}
+          {presentation.earnedDelta}
+        </p>
+      ) : null}
+      {presentation.accumulationMessage ? (
+        <p className="mt-5 rounded-brand border border-success/25 bg-surface-soft p-4 text-sm font-medium leading-6 text-muted-strong">
+          {presentation.accumulationMessage}
         </p>
       ) : null}
       <p className="mt-6 text-xs font-semibold uppercase tracking-system text-muted">Saldo actual</p>
